@@ -39,7 +39,7 @@ public interface ArticleService {
      */
     Result listArchives();
 
-    ArticleVo findArticleById(Long id);
+    Result findArticleById(Long id);
 
     Result publish(ArticleParam articleParam);
 

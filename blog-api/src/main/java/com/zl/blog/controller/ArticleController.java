@@ -24,7 +24,7 @@ public class ArticleController {
     //Result是统一结果返回
     @PostMapping
     @LogAnnotation(module = "文章", operation = "获取文章列表")
-    //@Cache(expire = 5 * 60 * 1000,name = "hot_article")
+    @Cache(expire = 5 * 60 * 1000,name = "Article_list")
     public Result articles(@RequestBody PageParams pageParams) {
 
         return articleService.listArticle(pageParams);
@@ -34,7 +34,9 @@ public class ArticleController {
      * 最热文章接口
      * @return
      */
+
     @PostMapping("hot")
+    @Cache(expire = 5 * 60 * 1000,name = "Article_hot")
     public Result hotArticles() {
         int num = 5;
         return articleService.hotArticles(num);
@@ -45,6 +47,7 @@ public class ArticleController {
      * @return
      */
     @PostMapping("new")
+    @Cache(expire = 5 * 60 * 1000,name = "Article_new")
     public Result newArticles() {
         int num = 5;
         return articleService.newArticles(num);
@@ -61,18 +64,19 @@ public class ArticleController {
 
     @PostMapping("view/{id}")
     public Result findArticleById(@PathVariable("id") Long id) {
-        ArticleVo articleVo = articleService.findArticleById(id);
-        return Result.success(articleVo);
+
+        return articleService.findArticleById(id);
     }
 
     @PostMapping("publish")
     public Result publish(@RequestBody ArticleParam articleParam){
         return articleService.publish(articleParam);
     }
+
     @PostMapping("{id}")
     public Result articleById(@PathVariable("id") Long articleId){
-        ArticleVo articleVo = articleService.findArticleById(articleId);
-        return Result.success(articleVo);
+
+        return articleService.findArticleById(articleId);
     }
 
     @PostMapping("search")

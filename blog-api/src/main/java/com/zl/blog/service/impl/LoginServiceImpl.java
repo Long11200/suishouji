@@ -61,13 +61,13 @@ public class LoginServiceImpl implements LoginService {
     public SysUser checkToken(String token) {
         if (StringUtils.isBlank(token))
             return null;
-        Map<String, Object> stringObjectMap = JWTUtils.checkToken(token);
+        Map<String, Object> stringObjectMap = JWTUtils.checkToken(token);   //检查Token是否合法
         if (stringObjectMap == null)
             return null;
-        String userJson = redisTemplate.opsForValue().get("TOKEN_" + token);//
+        String userJson = redisTemplate.opsForValue().get("TOKEN_" + token);//查找redis中token是否还存在
         if (StringUtils.isBlank(userJson))
             return null;
-        SysUser sysUser = JSON.parseObject(userJson, SysUser.class);
+        SysUser sysUser = JSON.parseObject(userJson, SysUser.class);    //存在则返回对象
         return sysUser;
     }
 

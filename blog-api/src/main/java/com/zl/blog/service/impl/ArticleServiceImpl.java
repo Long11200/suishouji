@@ -19,6 +19,7 @@ import com.zl.blog.vo.*;
 import com.zl.blog.vo.params.ArticleParam;
 import com.zl.blog.vo.params.PageParams;
 import org.joda.time.DateTime;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,6 +50,8 @@ public class ArticleServiceImpl implements ArticleService {
     private ThreadService threadService;
     @Autowired
     private ArticleTagMapper articleTagMapper;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
 
     @Override
@@ -91,7 +94,7 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
     @Override
-    public ArticleVo findArticleById(Long id) {
+    public Result findArticleById(Long id) {
         Article article = articleMapper.selectById(id);
         ArticleVo articleVo = copy(article, true, true, true, true);
         //查看完文章后,新增阅读数
@@ -99,7 +102,7 @@ public class ArticleServiceImpl implements ArticleService {
         //更新增加了接口的耗时,如果一旦更新出问题,不能影响查看文章的操作
         //解决:线程池 把更新操作扔到线程池中去执行,和主线程就不相关了
         threadService.updateViewCount(articleMapper, article);
-        return articleVo;
+        return Result.success(articleVo);
     }
 
     @Override
@@ -172,6 +175,14 @@ public class ArticleServiceImpl implements ArticleService {
         }
         Map<String,String> map = new HashMap<>();
         map.put("id",article.getId().toString());
+
+        if (isEdit) {
+            //发布消息,更新缓存
+            ArticleMessage articleMessage = new ArticleMessage();
+            articleMessage.setArticleId(article.getId());
+            rabbitTemplate.convertAndSend("blog-update-article",articleMessage);
+        }
+
         return Result.success(map);
     }
 

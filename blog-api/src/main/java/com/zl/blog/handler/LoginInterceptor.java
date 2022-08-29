@@ -34,7 +34,7 @@ public class LoginInterceptor implements HandlerInterceptor {
          * 2. 判断token是否为空
          *  如果为空,未登录
          *  如果不为空,登录验证loginService
-         * 3.如果认真成功 放行
+         * 3.如果认证成功 放行
          */
         if (!(handler instanceof HandlerMethod))
             return true;
