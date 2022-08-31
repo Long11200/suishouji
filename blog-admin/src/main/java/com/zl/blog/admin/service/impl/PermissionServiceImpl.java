@@ -30,7 +30,7 @@ public class PermissionServiceImpl implements PermissionService {
         Page<Permission> page = new Page<>(pageParam.getCurrentPage(), pageParam.getPageSize());
         LambdaQueryWrapper<Permission> queryWrapper = new LambdaQueryWrapper<>();
         if (StringUtils.isNotBlank(pageParam.getQueryString())) {
-            queryWrapper.eq(Permission::getName,pageParam.getQueryString());
+            queryWrapper.like(Permission::getName,pageParam.getQueryString());
         }
         Page<Permission> permissionPage = permissionMapper.selectPage(page, queryWrapper);
         PageResult<Permission> pageResult = new PageResult<>();

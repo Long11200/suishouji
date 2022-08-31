@@ -2,6 +2,7 @@ package com.zl.blog.admin.service;
 
 import com.zl.blog.admin.dao.pojo.Admin;
 import com.zl.blog.admin.dao.pojo.Permission;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -16,6 +17,7 @@ import java.util.List;
  * @create 2022-07-02 0:07
  */
 @Service
+@Slf4j
 public class authService {
 
     @Autowired
@@ -28,27 +30,35 @@ public class authService {
      * @param authentication
      * @return
      */
-    public boolean auth(HttpServletRequest request, Authentication authentication) {
+    public boolean auth(HttpServletRequest request, Authentication authentication){
         String requestURI = request.getRequestURI();
+        log.info("request url:{}", requestURI);
         //true代表放行 false 代表拦截
-        Object principal = authentication.getPrincipal();   //获取当前用户信息
-        if (principal == null || "anonymousUser".equals(principal)) {
+        Object principal = authentication.getPrincipal();
+        if (principal == null || "anonymousUser".equals(principal)){
             //未登录
             return false;
         }
         UserDetails userDetails = (UserDetails) principal;
         String username = userDetails.getUsername();
         Admin admin = adminService.findAdminByUsername(username);
-        if (admin == null) {
+        if (admin == null){
             return false;
         }
-        Long id = admin.getId();
-        List<Permission> permissionList = this.adminService.findPermissionByAdminId(id);
+        if (admin.getId() == 1){
+            //认为是超级管理员
+            return true;
+        }
+        List<Permission> permissions = adminService.findPermissionByAdminId(admin.getId());
         requestURI = StringUtils.split(requestURI,'?')[0];
-        for (Permission permission : permissionList) {
-            if (requestURI.equals(permission.getPath()))
+        for (Permission permission : permissions) {
+            if (requestURI.equals(permission.getPath())){
+                log.info("权限通过");
                 return true;
+            }
         }
         return false;
     }
+
+
 }
